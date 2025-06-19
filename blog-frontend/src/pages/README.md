@@ -1,0 +1,1 @@
+# This directory contains different pages of the application. Each page represents a distinct view or route within the application. You can organize your page components here for better structure and maintainability.

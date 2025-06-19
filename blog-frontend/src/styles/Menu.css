@@ -1,0 +1,382 @@
+/* Import Google Fonts for luxury typography */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700;900&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+
+.menu-section {
+    background: linear-gradient(135deg, #fdfcfa 0%, #f9f7f4 100%);
+    padding: 100px 0;
+    position: relative;
+}
+
+.menu-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(165, 42, 42, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.menu-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Main Menu Title */
+.menu-main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 80px;
+    color: #1a1a1a;
+    letter-spacing: 2px;
+    position: relative;
+    text-transform: uppercase;
+}
+
+.menu-main-title::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    width: 120px;
+    height: 1px;
+    background: linear-gradient(135deg, transparent 0%, #a52a2a 50%, transparent 100%);
+    transform: translateX(-50%);
+}
+
+.menu-main-title::before {
+    content: '';
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: #a52a2a;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+/* Menu Categories */
+.menu-category {
+    margin-bottom: 100px;
+}
+
+.menu-category:last-of-type {
+    margin-bottom: 80px;
+}
+
+/* Category Titles */
+.category-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 60px;
+    color: #2c2c2c;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.category-title::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    width: 80px;
+    height: 1px;
+    background: #a52a2a;
+    transform: translateX(-50%);
+}
+
+/* Menu Grid */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 40px;
+    justify-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Menu Cards */
+.menu-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.04);
+    padding: 45px 35px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(165, 42, 42, 0.08);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+}
+
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #a52a2a 0%, #8b1a1a 100%);
+}
+
+.menu-card::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(165, 42, 42, 0.02) 0%, transparent 100%);
+    transition: top 0.4s ease;
+    pointer-events: none;
+}
+
+.menu-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.12),
+        0 8px 24px rgba(165, 42, 42, 0.08);
+    border-color: rgba(165, 42, 42, 0.15);
+}
+
+.menu-card:hover::after {
+    top: 0;
+}
+
+/* Menu Item Titles */
+.menu-item-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    color: #2c2c2c;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    position: relative;
+}
+
+.menu-item-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    width: 40px;
+    height: 1px;
+    background: #a52a2a;
+    transform: translateX(-50%);
+    opacity: 0.6;
+}
+
+/* Menu Descriptions */
+.menu-desc {
+    color: #5a5a5a;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 25px;
+    font-weight: 400;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Menu Prices */
+.menu-price {
+    color: #a52a2a;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    letter-spacing: 0.5px;
+}
+
+/* Menu Button Row */
+.menu-btn-row {
+    text-align: center;
+    margin-top: 80px;
+}
+
+/* Menu Button */
+.menu-btn {
+    background: linear-gradient(135deg, #a52a2a 0%, #8b1a1a 100%);
+    color: #fff;
+    border: none;
+    padding: 20px 50px;
+    border-radius: 40px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 
+        0 8px 30px rgba(165, 42, 42, 0.25),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.6s;
+}
+
+.menu-btn:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 
+        0 15px 45px rgba(165, 42, 42, 0.35),
+        0 5px 15px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #b13030 0%, #9a1f1f 100%);
+}
+
+.menu-btn:hover::before {
+    left: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .menu-container {
+        padding: 0 30px;
+    }
+    
+    .menu-grid {
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 35px;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-section {
+        padding: 80px 0;
+    }
+    
+    .menu-container {
+        padding: 0 20px;
+    }
+    
+    .menu-category {
+        margin-bottom: 80px;
+    }
+    
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .menu-card {
+        padding: 35px 25px;
+        max-width: 100%;
+    }
+    
+    .menu-main-title {
+        margin-bottom: 60px;
+    }
+    
+    .category-title {
+        margin-bottom: 40px;
+    }
+    
+    .menu-btn-row {
+        margin-top: 60px;
+    }
+    
+    .menu-btn {
+        padding: 18px 40px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-card {
+        padding: 30px 20px;
+    }
+    
+    .menu-item-title {
+        font-size: 1.3rem;
+    }
+    
+    .menu-desc {
+        font-size: 1rem;
+    }
+    
+    .menu-price {
+        font-size: 1.2rem;
+    }
+    
+    .menu-btn {
+        padding: 16px 35px;
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+}
+
+/* Luxury hover animations for different sections */
+.menu-category:nth-child(2) .menu-card:hover {
+    background: rgba(255, 252, 250, 0.95);
+}
+
+.menu-category:nth-child(3) .menu-card:hover {
+    background: rgba(255, 250, 248, 0.95);
+}
+
+.menu-category:nth-child(4) .menu-card:hover {
+    background: rgba(252, 248, 245, 0.95);
+}
+
+.menu-category:nth-child(5) .menu-card:hover {
+    background: rgba(250, 246, 243, 0.95);
+}
+
+.menu-btn {
+    display: inline-block; /* Important for Links */
+    background: linear-gradient(135deg, #a52a2a 0%, #8b1a1a 100%);
+    color: #fff;
+    text-decoration: none; /* Remove link underline */
+    border: none;
+    padding: 20px 50px;
+    border-radius: 40px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 
+        0 8px 30px rgba(165, 42, 42, 0.25),
+        0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-btn:hover {
+    color: #fff; /* Ensure text stays white */
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 
+        0 15px 45px rgba(165, 42, 42, 0.35),
+        0 5px 15px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #b13030 0%, #9a1f1f 100%);
+}
+
