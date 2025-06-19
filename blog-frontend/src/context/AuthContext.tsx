@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getApiUrl } from '../config/api';
 
 export interface User {
     id: string;
@@ -60,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const login = async (email: string, password: string): Promise<boolean> => {
         try {
             // Call the backend login API
-            const response = await fetch('http://localhost:3001/api/login', {
+            const response = await fetch(getApiUrl('/api/login'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -96,7 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const signup = async (name: string, email: string, password: string): Promise<boolean> => {
         try {
             // Call the backend signup API
-            const response = await fetch('http://localhost:3001/api/signup', {
+            const response = await fetch(getApiUrl('/api/signup'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
