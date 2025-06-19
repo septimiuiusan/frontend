@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 import '../styles/Feedback.css';
 
 interface CustomerReview {
@@ -32,7 +33,7 @@ const Feedback: React.FC = () => {
     useEffect(() => {
         const loadReviews = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/feedbacks');
+                const response = await fetch(getApiUrl('/api/feedbacks'));
                 if (response.ok) {
                     const data = await response.json();
                     setReviews(data.feedbacks);
@@ -49,7 +50,7 @@ const Feedback: React.FC = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('http://localhost:3001/api/feedback', {
+            const response = await fetch(getApiUrl('/api/feedback'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
