@@ -109,6 +109,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         const now = new Date();
         const orderId = `ORD-${Date.now()}`;
         
+        console.log('🍽️ Creating order:', { orderId, items, total, user: user?.id });
+        
         const newOrder: PlacedOrder = {
             id: orderId,
             userId: user?.id || 'guest', // Use user.id instead of email
@@ -125,6 +127,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         // Send to backend API
         try {
             if (user?.id) {
+                console.log('👤 User authenticated, sending to backend:', user.id);
+                
                 // Map frontend item names to backend numeric IDs
                 const menuItemMap: { [key: string]: string } = {
                     // Starters
@@ -168,10 +172,24 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
                 const backendItems = items.map(item => {
                     const itemId = menuItemMap[item.name];
                     if (!itemId) {
-                        console.error(`Item "${item.name}" not found in menu mapping!`);
+                        console.error(`❌ Item "${item.name}" not found in menu mapping!`);
                         return { itemId: '1', quantity: item.quantity }; // Default to first item
                     }
+                    console.log(`✅ Mapped "${item.name}" to itemId: ${itemId}`);
                     return { itemId, quantity: item.quantity };
+                });
+
+                const requestBody = {
+                    userId: user.id,
+                    items: backendItems,
+                    total: total
+                };
+                
+                console.log('📤 Sending to backend:', {
+                    url: getApiUrl('/api/order'),
+                    method: 'POST',
+                    headers: { 'x-user-id': user.id },
+                    body: requestBody
                 });
 
                 const response = await fetch(getApiUrl('/api/order'), {
@@ -180,15 +198,14 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
                         'Content-Type': 'application/json',
                         'x-user-id': user.id
                     },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        items: backendItems
-                    }),
+                    body: JSON.stringify(requestBody),
                 });
 
+                console.log('📨 Backend response status:', response.status);
+                
                 if (response.ok) {
                     const backendOrder = await response.json();
-                    console.log('Order saved to backend:', backendOrder);
+                    console.log('✅ Order saved to backend successfully:', backendOrder);
                     
                     // Update the order with the backend ID
                     setOrders(prevOrders => 
@@ -199,16 +216,23 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
                         )
                     );
                 } else {
-                    const errorData = await response.json();
-                    console.error('Failed to save order to backend:', errorData);
+                    const errorText = await response.text();
+                    console.error('❌ Failed to save order to backend:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: errorText
+                    });
                     // Keep the order in frontend state even if backend fails
                 }
+            } else {
+                console.log('⚠️ No user authenticated - order saved locally only');
             }
         } catch (error) {
-            console.error('Error sending order to backend:', error);
+            console.error('💥 Error sending order to backend:', error);
             // Keep the order in frontend state even if backend fails
         }
 
+        console.log('✅ Order process completed, returning orderId:', orderId);
         return orderId;
     };
 
