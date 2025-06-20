@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 import RoleGuard from '../components/RoleGuard';
 
 interface Contact {
@@ -105,7 +106,7 @@ const DashboardPage: React.FC = () => {
       // Staff and above can see contacts
       if (['CASHIER', 'CHEF', 'MANAGER', 'ADMIN'].includes(user.role)) {
         promises.push(
-          fetch('http://localhost:3001/api/contacts', { headers })
+          fetch(getApiUrl('/api/contacts'), { headers })
             .then(res => res.json())
             .then(data => data.contacts || [])
             .catch(() => [])
@@ -115,7 +116,7 @@ const DashboardPage: React.FC = () => {
       // Cashier and above can see all orders
       if (['CASHIER', 'MANAGER', 'ADMIN'].includes(user.role)) {
         promises.push(
-          fetch('http://localhost:3001/api/orders', { headers })
+          fetch(getApiUrl('/api/orders'), { headers })
             .then(res => res.json())
             .then(data => data.orders || [])
             .catch(() => [])
@@ -125,7 +126,7 @@ const DashboardPage: React.FC = () => {
       // Staff and above can see reservations
       if (['CASHIER', 'CHEF', 'MANAGER', 'ADMIN'].includes(user.role)) {
         promises.push(
-          fetch('http://localhost:3001/api/reservations', { headers })
+          fetch(getApiUrl('/api/reservations'), { headers })
             .then(res => res.json())
             .then(data => data.reservations || [])
             .catch(() => [])
@@ -135,7 +136,7 @@ const DashboardPage: React.FC = () => {
       // Admins can see users
       if (user.role === 'ADMIN') {
         promises.push(
-          fetch('http://localhost:3001/api/users', { headers })
+          fetch(getApiUrl('/api/users'), { headers })
             .then(res => res.json())
             .then(data => data.users || [])
             .catch(() => [])
@@ -145,7 +146,7 @@ const DashboardPage: React.FC = () => {
       // Admins can see feedbacks
       if (user.role === 'ADMIN') {
         promises.push(
-          fetch('http://localhost:3001/api/admin/feedbacks', { headers })
+          fetch(getApiUrl('/api/admin/feedbacks'), { headers })
             .then(res => res.json())
             .then(data => data.feedbacks || [])
             .catch(() => [])
@@ -181,7 +182,7 @@ const DashboardPage: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:3001/api/orders/${orderId}/status`, {
+      const response = await fetch(getApiUrl(`/api/orders/${orderId}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +214,7 @@ const DashboardPage: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:3001/api/reservations/${reservationId}/status`, {
+      const response = await fetch(getApiUrl(`/api/reservations/${reservationId}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +249,7 @@ const DashboardPage: React.FC = () => {
     }
     
     try {
-      const response = await fetch('http://localhost:3001/api/users', {
+      const response = await fetch(getApiUrl('/api/users'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -277,7 +278,7 @@ const DashboardPage: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:3001/api/user/${userId}/role`, {
+      const response = await fetch(getApiUrl(`/api/user/${userId}/role`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -313,7 +314,7 @@ const DashboardPage: React.FC = () => {
     if (!user) return;
     
     try {
-      const response = await fetch(`http://localhost:3001/api/admin/feedback/${feedbackId}/status`, {
+      const response = await fetch(getApiUrl(`/api/admin/feedback/${feedbackId}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

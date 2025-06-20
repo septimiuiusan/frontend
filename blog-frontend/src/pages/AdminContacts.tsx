@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 import { StaffOnly } from '../components/RoleGuard';
 
 interface Contact {
@@ -36,7 +37,7 @@ const AdminContacts: React.FC = () => {
   const fetchContacts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/contacts', {
+      const response = await fetch(getApiUrl('/api/contacts'), {
         headers: {
           'x-user-id': user?.id || ''
         }
@@ -76,7 +77,7 @@ const AdminContacts: React.FC = () => {
 
   const updateStatus = async (contactId: string, newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/contact/${contactId}/status`, {
+      const response = await fetch(getApiUrl(`/api/contact/${contactId}/status`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

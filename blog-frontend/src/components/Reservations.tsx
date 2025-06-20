@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 import '../styles/Reservations.css';
 
 interface ReservationForm {
@@ -91,7 +92,7 @@ const Reservations: React.FC = () => {
                         specialRequest: null
                     }); // Debug log
                     
-                    const response = await fetch('http://localhost:3001/api/reservation', {
+                    const response = await fetch(getApiUrl('/api/reservation'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { getApiUrl } from '../config/api';
 import '../styles/Contact.css';
 
 const Contact: React.FC = () => {
@@ -35,7 +36,7 @@ const Contact: React.FC = () => {
         userId: user?.id || undefined // Include userId if user is logged in
       };
 
-      const response = await fetch('http://localhost:3001/api/contact', {
+      const response = await fetch(getApiUrl('/api/contact'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

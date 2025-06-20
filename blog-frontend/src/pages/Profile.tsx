@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useOrders } from '../context/OrderContext';
+import { getApiUrl } from '../config/api';
 import '../styles/profile.css';
 
 const Profile: React.FC = () => {
@@ -14,7 +15,7 @@ const Profile: React.FC = () => {
         const loadReservations = async () => {
             if (user?.id) {
                 try {
-                    const response = await fetch(`http://localhost:3001/api/reservations/${user.id}`, {
+                    const response = await fetch(getApiUrl(`/api/reservations/${user.id}`), {
                         headers: {
                             'x-user-id': user.id
                         }

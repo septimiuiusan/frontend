@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { getApiUrl } from '../config/api';
 
 export interface OrderItem {
     id: string;
@@ -60,7 +61,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         const loadUserOrders = async () => {
             if (user?.id) {
                 try {
-                    const response = await fetch(`http://localhost:3001/api/orders/${user.id}`, {
+                    const response = await fetch(getApiUrl(`/api/orders/${user.id}`), {
                         headers: {
                             'x-user-id': user.id
                         }
@@ -173,7 +174,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
                     return { itemId, quantity: item.quantity };
                 });
 
-                const response = await fetch('http://localhost:3001/api/order', {
+                const response = await fetch(getApiUrl('/api/order'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
