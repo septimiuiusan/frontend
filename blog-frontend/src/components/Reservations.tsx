@@ -9,6 +9,16 @@ interface ReservationForm {
     date: string;
     time: string;
     guests: string;
+    branchId: string;
+}
+
+interface Branch {
+    id: string;
+    name: string;
+    country: string;
+    flag: string;
+    address: string;
+    status: 'OPERATIONAL' | 'OPENING_SOON' | 'MAINTENANCE' | 'CLOSED';
 }
 
 const Reservations: React.FC = () => {
@@ -18,8 +28,45 @@ const Reservations: React.FC = () => {
         email: '',
         date: '',
         time: '',
-        guests: '2'
+        guests: '2',
+        branchId: ''
     });
+
+    // Available branches - in a real app, this would come from an API
+    const [branches] = useState<Branch[]>([
+        {
+            id: '1',
+            name: 'London',
+            country: 'UK',
+            flag: '🇬🇧',
+            address: '123 Oxford Street, London W1D 2HX',
+            status: 'OPERATIONAL'
+        },
+        {
+            id: '2',
+            name: 'Paris',
+            country: 'France',
+            flag: '🇫🇷',
+            address: '45 Champs-Élysées, 75008 Paris',
+            status: 'OPERATIONAL'
+        },
+        {
+            id: '3',
+            name: 'Rome',
+            country: 'Italy',
+            flag: '🇮🇹',
+            address: 'Via del Corso 87, 00186 Roma',
+            status: 'OPERATIONAL'
+        },
+        {
+            id: '4',
+            name: 'Berlin',
+            country: 'Germany',
+            flag: '🇩🇪',
+            address: 'Unter den Linden 12, 10117 Berlin',
+            status: 'OPENING_SOON'
+        }
+    ]);
 
     const [errors, setErrors] = useState<Partial<ReservationForm>>({});
     const [showModal, setShowModal] = useState(false);
@@ -70,6 +117,10 @@ const Reservations: React.FC = () => {
             newErrors.time = 'Time is required';
         }
 
+        if (!formData.branchId) {
+            newErrors.branchId = 'Please select a location';
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -103,6 +154,7 @@ const Reservations: React.FC = () => {
                             date: formData.date,
                             time: formData.time,
                             partySize: formData.guests,
+                            branchId: formData.branchId,
                             specialRequest: null // Could add this field to the form later
                         }),
                     });
@@ -142,9 +194,15 @@ const Reservations: React.FC = () => {
             email: '',
             date: '',
             time: '',
-            guests: '2'
+            guests: '2',
+            branchId: ''
         });
         setErrors({});
+    };
+
+    // Get selected branch info for display
+    const getSelectedBranch = () => {
+        return branches.find(branch => branch.id === formData.branchId);
     };
 
     // Get today's date in YYYY-MM-DD format
@@ -157,7 +215,7 @@ const Reservations: React.FC = () => {
                     <div className="reservations-header">
                         <h1 className="reservations-title">Make a Reservation</h1>
                         <p className="reservations-subtitle">
-                            Reserve your table for an exceptional dining experience at Steakz.
+                            Reserve your table at any of our European locations for an exceptional dining experience at Steakz.
                         </p>
                     </div>
 
@@ -185,6 +243,26 @@ const Reservations: React.FC = () => {
                                     className={`form-input ${errors.email ? 'error' : ''}`}
                                 />
                                 {errors.email && <span className="error-message">{errors.email}</span>}
+                            </div>
+
+                            <div className="form-group">
+                                <select
+                                    name="branchId"
+                                    value={formData.branchId}
+                                    onChange={handleInputChange}
+                                    className={`form-input ${errors.branchId ? 'error' : ''}`}
+                                >
+                                    <option value="">Select Location *</option>
+                                    {branches
+                                        .filter(branch => branch.status === 'OPERATIONAL')
+                                        .map(branch => (
+                                            <option key={branch.id} value={branch.id}>
+                                                {branch.flag} {branch.name}, {branch.country} - {branch.address}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                                {errors.branchId && <span className="error-message">{errors.branchId}</span>}
                             </div>
 
                             <div className="form-row">
@@ -255,9 +333,36 @@ const Reservations: React.FC = () => {
                 <div className="modal-overlay" onClick={closeModal}>
                     <div className="modal-card" onClick={(e) => e.stopPropagation()}>
                         <h3 className="modal-title">Reservation Confirmed</h3>
-                        <p className="modal-message">
-                            Thank you for reserving a table at Steakz. We look forward to serving you.
-                        </p>
+                        <div className="modal-message">
+                            <p>Thank you for reserving a table at Steakz.</p>
+                            {getSelectedBranch() && (
+                                <div style={{ 
+                                    marginTop: '1rem', 
+                                    padding: '1rem', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '8px',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    <strong>Reservation Details:</strong>
+                                    <div style={{ marginTop: '0.5rem' }}>
+                                        📍 <strong>Location:</strong> {getSelectedBranch()?.flag} {getSelectedBranch()?.name}, {getSelectedBranch()?.country}
+                                    </div>
+                                    <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
+                                        {getSelectedBranch()?.address}
+                                    </div>
+                                    <div style={{ marginTop: '0.5rem' }}>
+                                        📅 <strong>Date:</strong> {formData.date}
+                                    </div>
+                                    <div style={{ marginTop: '0.25rem' }}>
+                                        🕐 <strong>Time:</strong> {formData.time}
+                                    </div>
+                                    <div style={{ marginTop: '0.25rem' }}>
+                                        👥 <strong>Guests:</strong> {formData.guests}
+                                    </div>
+                                </div>
+                            )}
+                            <p style={{ marginTop: '1rem' }}>We look forward to serving you.</p>
+                        </div>
                         <button onClick={closeModal} className="modal-close-btn">
                             Close
                         </button>

@@ -50,6 +50,20 @@ interface Feedback {
   user?: { name: string; email: string; };
 }
 
+interface Branch {
+  id: string;
+  name: string;
+  country: string;
+  flag: string;
+  address: string;
+  status: 'OPERATIONAL' | 'OPENING_SOON' | 'MAINTENANCE' | 'CLOSED';
+  dailyRevenue: number;
+  currency: string;
+  staffCount: number;
+  managerName: string;
+  openingDate?: string;
+}
+
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -57,6 +71,57 @@ const DashboardPage: React.FC = () => {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([
+    {
+      id: '1',
+      name: 'London',
+      country: 'UK',
+      flag: '🇬🇧',
+      address: '123 Oxford Street, London W1D 2HX',
+      status: 'OPERATIONAL',
+      dailyRevenue: 2340,
+      currency: '£',
+      staffCount: 12,
+      managerName: 'Sarah Wilson'
+    },
+    {
+      id: '2',
+      name: 'Paris',
+      country: 'France',
+      flag: '🇫🇷',
+      address: '45 Champs-Élysées, 75008 Paris',
+      status: 'OPERATIONAL',
+      dailyRevenue: 2890,
+      currency: '€',
+      staffCount: 15,
+      managerName: 'Jean Dubois'
+    },
+    {
+      id: '3',
+      name: 'Rome',
+      country: 'Italy',
+      flag: '🇮🇹',
+      address: 'Via del Corso 87, 00186 Roma',
+      status: 'OPERATIONAL',
+      dailyRevenue: 2150,
+      currency: '€',
+      staffCount: 10,
+      managerName: 'Marco Rossi'
+    },
+    {
+      id: '4',
+      name: 'Berlin',
+      country: 'Germany',
+      flag: '🇩🇪',
+      address: 'Unter den Linden 12, 10117 Berlin',
+      status: 'OPENING_SOON',
+      dailyRevenue: 2500,
+      currency: '€',
+      staffCount: 8,
+      managerName: 'Klaus Mueller',
+      openingDate: 'Q3 2025'
+    }
+  ]);
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [refreshing, setRefreshing] = useState(false);
@@ -71,6 +136,23 @@ const DashboardPage: React.FC = () => {
     role: 'CUSTOMER'
   });
   const [selectedUserForRole, setSelectedUserForRole] = useState<User | null>(null);
+
+  // Branch management states
+  const [showAddBranchModal, setShowAddBranchModal] = useState(false);
+  const [showEditBranchModal, setShowEditBranchModal] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
+  const [newBranch, setNewBranch] = useState<Branch>({
+    id: '',
+    name: '',
+    country: '',
+    flag: '',
+    address: '',
+    status: 'OPERATIONAL',
+    dailyRevenue: 0,
+    currency: '€',
+    staffCount: 0,
+    managerName: ''
+  });
 
   // Fetch data based on user role
   useEffect(() => {
@@ -153,6 +235,16 @@ const DashboardPage: React.FC = () => {
         );
       }
 
+      // Admins can see branches
+      if (user.role === 'ADMIN') {
+        promises.push(
+          fetch(getApiUrl('/api/branches'), { headers })
+            .then(res => res.json())
+            .then(data => data.branches || [])
+            .catch(() => [])
+        );
+      }
+
       const results = await Promise.all(promises);
       
       let index = 0;
@@ -168,6 +260,7 @@ const DashboardPage: React.FC = () => {
       if (user.role === 'ADMIN') {
         setUsers(results[index++] || []);
         setFeedbacks(results[index++] || []);
+        setBranches(results[index++] || []);
       }
 
     } catch (error) {
@@ -306,6 +399,82 @@ const DashboardPage: React.FC = () => {
     } catch (error) {
       console.error('Error updating user role:', error);
       alert('Error updating user role');
+    }
+  };
+
+  // Branch management functions
+  const createBranch = () => {
+    if (!newBranch.name || !newBranch.country || !newBranch.address || !newBranch.managerName) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    const branchToAdd: Branch = {
+      ...newBranch,
+      id: Date.now().toString(), // Simple ID generation
+    };
+    
+    setBranches(prevBranches => [branchToAdd, ...prevBranches]);
+    setNewBranch({
+      id: '',
+      name: '',
+      country: '',
+      flag: '',
+      address: '',
+      status: 'OPERATIONAL',
+      dailyRevenue: 0,
+      currency: '€',
+      staffCount: 0,
+      managerName: ''
+    });
+    setShowAddBranchModal(false);
+    console.log('Branch created successfully:', branchToAdd);
+  };
+
+  const updateBranch = () => {
+    if (!selectedBranch) return;
+    
+    setBranches(prevBranches => 
+      prevBranches.map(branch => 
+        branch.id === selectedBranch.id 
+          ? selectedBranch
+          : branch
+      )
+    );
+    setSelectedBranch(null);
+    setShowEditBranchModal(false);
+    console.log('Branch updated successfully:', selectedBranch);
+  };
+
+  const deleteBranch = (branchId: string) => {
+    if (window.confirm('Are you sure you want to delete this branch?')) {
+      setBranches(prevBranches => prevBranches.filter(branch => branch.id !== branchId));
+      console.log('Branch deleted:', branchId);
+    }
+  };
+
+  const openEditBranch = (branch: Branch) => {
+    setSelectedBranch({ ...branch });
+    setShowEditBranchModal(true);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'OPERATIONAL': return { bg: '#d4edda', border: '#c3e6cb', color: '#155724' };
+      case 'OPENING_SOON': return { bg: '#fff3cd', border: '#ffeaa7', color: '#856404' };
+      case 'MAINTENANCE': return { bg: '#f8d7da', border: '#f5c6cb', color: '#721c24' };
+      case 'CLOSED': return { bg: '#e2e3e5', border: '#d6d8db', color: '#6c757d' };
+      default: return { bg: '#f8f9fa', border: '#dee2e6', color: '#6c757d' };
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'OPERATIONAL': return '✅';
+      case 'OPENING_SOON': return '🔄';
+      case 'MAINTENANCE': return '🔧';
+      case 'CLOSED': return '❌';
+      default: return '❓';
     }
   };
 
@@ -728,6 +897,137 @@ const DashboardPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Branches management section */}
+            <div style={{ background: 'white', borderRadius: '8px', padding: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: '0', color: '#721c24' }}>🏢 Branch Locations</h3>
+                <button 
+                  onClick={() => setShowAddBranchModal(true)}
+                  style={{ 
+                    padding: '0.5rem 1rem', 
+                    background: '#721c24', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '5px', 
+                    fontSize: '0.8rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  + Add Branch
+                </button>
+              </div>
+              <div style={{ fontSize: '0.9rem' }}>
+                {branches.length > 0 ? (
+                  branches.map(branch => {
+                    const statusStyle = getStatusColor(branch.status);
+                    return (
+                      <div key={branch.id} style={{ 
+                        padding: '0.75rem', 
+                        marginBottom: '0.5rem', 
+                        background: statusStyle.bg, 
+                        borderRadius: '4px', 
+                        border: `1px solid ${statusStyle.border}`
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 'bold', color: statusStyle.color }}>
+                              {getStatusIcon(branch.status)} {branch.flag} {branch.name}, {branch.country}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: '#666' }}>{branch.address}</div>
+                            <div style={{ fontSize: '0.8rem', color: statusStyle.color }}>
+                              Status: {branch.status.replace('_', ' ')}
+                              {branch.openingDate && ` (${branch.openingDate})`}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', marginRight: '1rem' }}>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>
+                              Daily Rev: {branch.currency}{branch.dailyRevenue.toLocaleString()}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: '#666' }}>
+                              Staff: {branch.staffCount} | Mgr: {branch.managerName}
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                            <button 
+                              onClick={() => openEditBranch(branch)}
+                              style={{ 
+                                padding: '0.25rem 0.5rem', 
+                                background: '#17a2b8', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '3px', 
+                                fontSize: '0.7rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              onClick={() => deleteBranch(branch.id)}
+                              style={{ 
+                                padding: '0.25rem 0.5rem', 
+                                background: '#dc3545', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '3px', 
+                                fontSize: '0.7rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p style={{ color: '#666', fontSize: '0.9rem' }}>No branches found</p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Branch Performance Summary */}
+          <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: '8px' }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#721c24' }}>📊 Multi-Branch Performance Summary</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div style={{ padding: '1rem', background: '#d1ecf1', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0c5460' }}>
+                  €{branches.filter(b => b.status === 'OPERATIONAL').reduce((sum, branch) => sum + branch.dailyRevenue, 0).toLocaleString()}
+                </div>
+                <div style={{ fontSize: '0.8rem' }}>Total Daily Revenue</div>
+                <div style={{ fontSize: '0.7rem', color: '#666' }}>
+                  Across {branches.filter(b => b.status === 'OPERATIONAL').length} active branches
+                </div>
+              </div>
+              <div style={{ padding: '1rem', background: '#d4edda', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#155724' }}>
+                  {branches.reduce((sum, branch) => sum + branch.staffCount, 0)}
+                </div>
+                <div style={{ fontSize: '0.8rem' }}>Total Staff</div>
+                <div style={{ fontSize: '0.7rem', color: '#666' }}>
+                  {branches.filter(b => b.status === 'OPERATIONAL').length} Branch Managers
+                </div>
+              </div>
+              <div style={{ padding: '1rem', background: '#fff3cd', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#856404' }}>
+                  {branches.length}
+                </div>
+                <div style={{ fontSize: '0.8rem' }}>Total Locations</div>
+                <div style={{ fontSize: '0.7rem', color: '#666' }}>
+                  {branches.filter(b => b.status === 'OPENING_SOON').length} opening soon
+                </div>
+              </div>
+              <div style={{ padding: '1rem', background: '#f8d7da', borderRadius: '5px', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#721c24' }}>
+                  {branches.length > 0 ? ((branches.filter(b => b.status === 'OPERATIONAL').length / branches.length) * 100).toFixed(1) : 0}%
+                </div>
+                <div style={{ fontSize: '0.8rem' }}>Operational Status</div>
+                <div style={{ fontSize: '0.7rem', color: '#666' }}>All branches performing</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1047,6 +1347,280 @@ const DashboardPage: React.FC = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Branch Modal */}
+      {showAddBranchModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#721c24' }}>Add New Branch</h3>
+            <form onSubmit={(e) => { e.preventDefault(); createBranch(); }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>City Name</label>
+                <input
+                  type="text"
+                  value={newBranch.name}
+                  onChange={(e) => setNewBranch(prev => ({ ...prev, name: e.target.value }))}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  placeholder="e.g., Madrid"
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Country</label>
+                <input
+                  type="text"
+                  value={newBranch.country}
+                  onChange={(e) => setNewBranch(prev => ({ ...prev, country: e.target.value }))}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  placeholder="e.g., Spain"
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Flag Emoji</label>
+                <input
+                  type="text"
+                  value={newBranch.flag}
+                  onChange={(e) => setNewBranch(prev => ({ ...prev, flag: e.target.value }))}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  placeholder="🇪🇸"
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Address</label>
+                <input
+                  type="text"
+                  value={newBranch.address}
+                  onChange={(e) => setNewBranch(prev => ({ ...prev, address: e.target.value }))}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  placeholder="Full address"
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Manager Name</label>
+                <input
+                  type="text"
+                  value={newBranch.managerName}
+                  onChange={(e) => setNewBranch(prev => ({ ...prev, managerName: e.target.value }))}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  placeholder="Manager's full name"
+                  required
+                />
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Daily Revenue</label>
+                  <input
+                    type="number"
+                    value={newBranch.dailyRevenue}
+                    onChange={(e) => setNewBranch(prev => ({ ...prev, dailyRevenue: Number(e.target.value) }))}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                    placeholder="2500"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Staff Count</label>
+                  <input
+                    type="number"
+                    value={newBranch.staffCount}
+                    onChange={(e) => setNewBranch(prev => ({ ...prev, staffCount: Number(e.target.value) }))}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                    placeholder="15"
+                    min="0"
+                  />
+                </div>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Currency</label>
+                  <select
+                    value={newBranch.currency}
+                    onChange={(e) => setNewBranch(prev => ({ ...prev, currency: e.target.value }))}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="€">€ (Euro)</option>
+                    <option value="£">£ (Pound)</option>
+                    <option value="$">$ (Dollar)</option>
+                    <option value="CHF">CHF (Swiss Franc)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Status</label>
+                  <select
+                    value={newBranch.status}
+                    onChange={(e) => setNewBranch(prev => ({ ...prev, status: e.target.value as Branch['status'] }))}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="OPERATIONAL">Operational</option>
+                    <option value="OPENING_SOON">Opening Soon</option>
+                    <option value="MAINTENANCE">Maintenance</option>
+                    <option value="CLOSED">Closed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button 
+                  type="submit"
+                  style={{ 
+                    padding: '0.75rem 1.5rem', 
+                    background: '#721c24', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '5px', 
+                    cursor: 'pointer' 
+                  }}
+                >
+                  Add Branch
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowAddBranchModal(false)}
+                  style={{ 
+                    padding: '0.75rem 1.5rem', 
+                    background: '#6c757d', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '5px', 
+                    cursor: 'pointer' 
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Branch Modal */}
+      {showEditBranchModal && selectedBranch && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'white', padding: '2rem', borderRadius: '8px', width: '90%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: '#721c24' }}>Edit Branch: {selectedBranch.name}</h3>
+            <form onSubmit={(e) => { e.preventDefault(); updateBranch(); }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>City Name</label>
+                <input
+                  type="text"
+                  value={selectedBranch.name}
+                  onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Country</label>
+                <input
+                  type="text"
+                  value={selectedBranch.country}
+                  onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, country: e.target.value }) : null)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Address</label>
+                <input
+                  type="text"
+                  value={selectedBranch.address}
+                  onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, address: e.target.value }) : null)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Manager Name</label>
+                <input
+                  type="text"
+                  value={selectedBranch.managerName}
+                  onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, managerName: e.target.value }) : null)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Status</label>
+                <select
+                  value={selectedBranch.status}
+                  onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, status: e.target.value as Branch['status'] }) : null)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                >
+                  <option value="OPERATIONAL">Operational</option>
+                  <option value="OPENING_SOON">Opening Soon</option>
+                  <option value="MAINTENANCE">Maintenance</option>
+                  <option value="CLOSED">Closed</option>
+                </select>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Daily Revenue</label>
+                  <input
+                    type="number"
+                    value={selectedBranch.dailyRevenue}
+                    onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, dailyRevenue: Number(e.target.value) }) : null)}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Staff Count</label>
+                  <input
+                    type="number"
+                    value={selectedBranch.staffCount}
+                    onChange={(e) => setSelectedBranch(prev => prev ? ({ ...prev, staffCount: Number(e.target.value) }) : null)}
+                    style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px' }}
+                    min="0"
+                  />
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button 
+                  type="submit"
+                  style={{ 
+                    padding: '0.75rem 1.5rem', 
+                    background: '#17a2b8', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '5px', 
+                    cursor: 'pointer' 
+                  }}
+                >
+                  Update Branch
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowEditBranchModal(false)}
+                  style={{ 
+                    padding: '0.75rem 1.5rem', 
+                    background: '#6c757d', 
+                    color: 'white', 
+                    border: 'none', 
+                    borderRadius: '5px', 
+                    cursor: 'pointer' 
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
